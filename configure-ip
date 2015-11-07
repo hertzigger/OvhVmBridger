@@ -9,7 +9,8 @@ TEMPLATE_IFCNF="template-ifcfg-ens32";
 TEMPLATE_ROUTE="template-route-ens32";
 NAME_IFCNF="ifcfg-ens32";
 NAME_ROUTE="route-ens32";
-RESOURCE_DIRECTORY="/usr/bin/"
+RESOURCE_DIRECTORY="/usr/bin/";
+LOCATION="/etc/sysconfig/network-scripts/";
 
 IP="$1";
 GATEWAY="$2";
