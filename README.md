@@ -7,7 +7,7 @@ Installation:
 
 pull repo to desired location ie. /usr/bin/
 
-ln -s /usr/binOvhVmBridger/configure-ip /usr/bin/configure-ip
+ln -s /usr/bin/OvhVmBridger/configure-ip /usr/bin/configure-ip
 
 Usage:
 
