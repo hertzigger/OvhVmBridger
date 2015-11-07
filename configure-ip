@@ -1,0 +1,95 @@
+#!/bin/bash
+TAG_IP=":IP:";
+TAG_GATEWAY=":GATEWAY:";
+TAG_MAC=":MAC:";
+TAG_GATEWAY_VM=":GATEWAYVM:";
+TAG_GATEWAY_GW_VM=":GATEWAYGWVM:";
+
+TEMPLATE_IFCNF="template-ifcfg-ens32";
+TEMPLATE_ROUTE="template-route-ens32";
+NAME_IFCNF="ifcfg-ens32";
+NAME_ROUTE="route-ens32";
+RESOURCE_DIRECTORY="/usr/bin/"
+
+IP="$1";
+GATEWAY="$2";
+MAC="$3";
+
+function valid_ip()
+{
+    local  ip=$1
+    local  stat=1
+
+    if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        OIFS=$IFS
+        IFS='.'
+        ip=($ip)
+        IFS=$OIFS
+        [[ ${ip[0]} -le 255 && ${ip[1]} -le 255 && ${ip[2]} -le 255 && ${ip[3]} -le 255 ]]
+        stat=$?
+    fi
+    return $stat
+}
+
+function get_first_3_octlets()
+{
+    local ip=$1;
+    local completeIp=;
+    IFS='.' read -ra ipParts <<< "$ip";
+    local x=1;
+    for i in "${ipParts[@]}"; do
+        if [ "$x" -lt 4 ]; then
+            completeIp+="$i";
+            completeIp+=".";
+        fi
+        x=$[$x +1];
+    done
+    echo "$completeIp";
+}
+
+if [[ $EUID -ne 0 ]]; then
+    echo "This script must be run as root" 1>&2
+    exit 1
+fi
+
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+    echo "`basename $0`: Parameters Required";
+    echo "";
+    echo "IP:          The ip to assign to this VM";
+    echo "Gateway:     Gateway ip of the host machine";
+    echo "Mac:         Virtual mac address assigned to the ip";
+    exit 0;
+fi
+
+if ! valid_ip $1; then
+    echo "Parameter IP is not a valid IP.";
+    exit 0;
+fi
+
+if ! valid_ip $2; then
+    echo "Parameter Gateway is not a valid IP.";
+    exit 0;
+fi
+
+if [ ! -f "$TEMPLATE_IFCNF" ]; then
+    echo "Missing $TEMPLATE_IFCNF";
+fi
+
+if [ ! -f "$TEMPLATE_ROUTE" ]; then
+    echo "Missing $TEMPLATE_ROUTE";
+fi
+
+GATEWAY_VM=$(get_first_3_octlets "$IP");
+GATEWAY_VM+="254";
+
+GATEWAY_GW_VM=$(get_first_3_octlets "$IP");
+GATEWAY_GW_VM+="0";
+
+cp "$TEMPLATE_IFCNF" "$NAME_IFCNF";
+cp "$TEMPLATE_ROUTE" "$NAME_ROUTE";
+
+sed -i "s/$TAG_IP/$1/g" "$NAME_IFCNF";
+sed -i "s/$TAG_GATEWAY/$2/g" "$NAME_IFCNF";
+sed -i "s/$TAG_MAC/$3/g" "$NAME_IFCNF";
+sed -i "s/$TAG_GATEWAY_VM/$GATEWAY_VM/g" "$NAME_ROUTE";
+sed -i "s/$TAG_GATEWAY_GW_VM/$GATEWAY_GW_VM/g" "$NAME_ROUTE";
