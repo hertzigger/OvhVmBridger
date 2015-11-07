@@ -9,7 +9,7 @@ TEMPLATE_IFCNF="template-ifcfg-ens32";
 TEMPLATE_ROUTE="template-route-ens32";
 NAME_IFCNF="ifcfg-ens32";
 NAME_ROUTE="route-ens32";
-RESOURCE_DIRECTORY="/usr/bin/";
+RESOURCE_DIRECTORY="$(dirname "$(readlink -f "$0")")";
 LOCATION="/etc/sysconfig/network-scripts/";
 
 IP="$1";
@@ -59,25 +59,27 @@ if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
     echo "IP:          The ip to assign to this VM";
     echo "Gateway:     Gateway ip of the host machine";
     echo "Mac:         Virtual mac address assigned to the ip";
-    exit 0;
+    exit 1;
 fi
 
 if ! valid_ip $1; then
     echo "Parameter IP is not a valid IP.";
-    exit 0;
+    exit 1;
 fi
 
 if ! valid_ip $2; then
     echo "Parameter Gateway is not a valid IP.";
-    exit 0;
+    exit 1;
 fi
 
-if [ ! -f "$TEMPLATE_IFCNF" ]; then
+if [ ! -f "$RESOURCE_DIRECTORY/$TEMPLATE_IFCNF" ]; then
     echo "Missing $TEMPLATE_IFCNF";
+    exit 1;
 fi
 
-if [ ! -f "$TEMPLATE_ROUTE" ]; then
+if [ ! -f "$RESOURCE_DIRECTORY/$TEMPLATE_ROUTE" ]; then
     echo "Missing $TEMPLATE_ROUTE";
+    exit 1;
 fi
 
 GATEWAY_VM=$(get_first_3_octlets "$IP");
@@ -86,11 +88,13 @@ GATEWAY_VM+="254";
 GATEWAY_GW_VM=$(get_first_3_octlets "$IP");
 GATEWAY_GW_VM+="0";
 
-cp "$TEMPLATE_IFCNF" "$NAME_IFCNF";
-cp "$TEMPLATE_ROUTE" "$NAME_ROUTE";
+cp "$RESOURCE_DIRECTORY/$TEMPLATE_IFCNF" "$RESOURCE_DIRECTORY/$NAME_IFCNF";
+cp "$RESOURCE_DIRECTORY/$TEMPLATE_ROUTE" "$RESOURCE_DIRECTORY/$NAME_ROUTE";
 
-sed -i "s/$TAG_IP/$1/g" "$NAME_IFCNF";
-sed -i "s/$TAG_GATEWAY/$2/g" "$NAME_IFCNF";
+sed -i "s/$TAG_IP/$1/g" "$RESOURCE_DIRECTORY/$NAME_IFCNF";
+sed -i "s/$TAG_GATEWAY_VM/$2/g" "$RESOURCE_DIRECTORY/$NAME_IFCNF";
 sed -i "s/$TAG_MAC/$3/g" "$NAME_IFCNF";
-sed -i "s/$TAG_GATEWAY_VM/$GATEWAY_VM/g" "$NAME_ROUTE";
-sed -i "s/$TAG_GATEWAY_GW_VM/$GATEWAY_GW_VM/g" "$NAME_ROUTE";
+sed -i "s/$TAG_GATEWAY_VM/$GATEWAY_VM/g" "$RESOURCE_DIRECTORY/$NAME_ROUTE";
+sed -i "s/$TAG_GATEWAY_GW_VM/$GATEWAY_GW_VM/g" "$RESOURCE_DIRECTORY/$NAME_ROUTE";
+
+#cp "$RESOURCE_DIRECTORY/$NAME_ROUTE" "$LOCATION";
