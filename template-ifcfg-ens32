@@ -1,4 +1,4 @@
-CE=ens32
+DEVICE=ens32
 BOOTPROTO=none
 ONBOOT=yes
 USERCTL=no
