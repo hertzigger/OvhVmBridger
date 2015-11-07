@@ -11,6 +11,6 @@ ln -s configure-ip OvhVmBridger/configure-ip
 
 Usage:
 
-./configure-ip <FAILOVER IP> <HOST SERVER IP> <IP VIRTUAL MAC>
+configure-ip FAILOVER_IP HOST_SERVER_IP IP_VIRTUAL_MAC
 
 running this will replace your network files in: /etc/sysconfig/network-scripts/ and restart your networking
