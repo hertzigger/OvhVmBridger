@@ -21,4 +21,4 @@ configure-ip FAILOVER_IP HOST_SERVER_IP IP_VIRTUAL_MAC INTERFACE_NAME
 
 running this will replace your network files in: /etc/sysconfig/network-scripts/ and restart your networking
 
-once this has run you will need to update the mac address on the network interface of the vm in proxmox/vmware
+once this has run you will need to update the mac address on the network interface of the vm in proxmox/vmware and reboot the vm
