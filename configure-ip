@@ -2,13 +2,14 @@
 TAG_IP=":IP:";
 TAG_GATEWAY=":GATEWAY:";
 TAG_MAC=":MAC:";
+TAG_INTERFACE=":INTERFACE:";
 TAG_GATEWAY_VM=":GATEWAYVM:";
 TAG_GATEWAY_GW_VM=":GATEWAYGWVM:";
 
-TEMPLATE_IFCNF="template-ifcfg-ens32";
-TEMPLATE_ROUTE="template-route-ens32";
-NAME_IFCNF="ifcfg-ens32";
-NAME_ROUTE="route-ens32";
+TEMPLATE_IFCNF="template-ifcfg";
+TEMPLATE_ROUTE="template-route";
+NAME_IFCNF="ifcfg";
+NAME_ROUTE="route";
 RESOURCE_DIRECTORY="$(dirname "$(readlink -f "$0")")";
 LOCATION="/etc/sysconfig/network-scripts/";
 
@@ -59,6 +60,7 @@ if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
     echo "IP:          The ip to assign to this VM";
     echo "Gateway:     Gateway ip of the host machine";
     echo "Mac:         Virtual mac address assigned to the ip";
+    echo "Interface:   Network interface name prifixed onto network file, eg ens32"
     exit 1;
 fi
 
@@ -90,15 +92,15 @@ GATEWAY_GW_VM+="0";
 
 cp "$RESOURCE_DIRECTORY/$TEMPLATE_IFCNF" "$RESOURCE_DIRECTORY/$NAME_IFCNF";
 cp "$RESOURCE_DIRECTORY/$TEMPLATE_ROUTE" "$RESOURCE_DIRECTORY/$NAME_ROUTE";
-echo "$3";
 
 sed -i "s/$TAG_IP/$1/g" "$RESOURCE_DIRECTORY/$NAME_IFCNF";
 sed -i "s/$TAG_GATEWAY_VM/$GATEWAY_VM/g" "$RESOURCE_DIRECTORY/$NAME_IFCNF";
 sed -i "s/$TAG_MAC/$3/g" "$RESOURCE_DIRECTORY/$NAME_IFCNF";
+sed -i "s/$TAG_INTERFACE/$4/g" "$RESOURCE_DIRECTORY/$NAME_IFCNF";
 sed -i "s/$TAG_GATEWAY_VM/$GATEWAY_VM/g" "$RESOURCE_DIRECTORY/$NAME_ROUTE";
 sed -i "s/$TAG_GATEWAY_GW_VM/$GATEWAY_GW_VM/g" "$RESOURCE_DIRECTORY/$NAME_ROUTE";
 
-cp "$RESOURCE_DIRECTORY/$NAME_ROUTE" "$LOCATION/$NAME_ROUTE";
-cp "$RESOURCE_DIRECTORY/$NAME_IFCNF" "$LOCATION/$NAME_IFCNF";
+cp "$RESOURCE_DIRECTORY/$NAME_ROUTE" "$LOCATION/$NAME_ROUTE-$4";
+cp "$RESOURCE_DIRECTORY/$NAME_IFCNF" "$LOCATION/$NAME_IFCNF-$4";
 
-systemctl restart network
+#systemctl restart network
